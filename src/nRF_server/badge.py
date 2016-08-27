@@ -117,6 +117,16 @@ class BadgeDelegate(DefaultDelegate):
         
 
     def handleNotification(self, cHandle, data):
+        f = open('raw_output.bin', 'ab')
+        #raw_t = struct.unpack('<%dB' % len(data), data)
+        #a = []
+        #a.append(raw_t)
+        #print a
+        #raw_a = [x for xs in a for x in xs]
+        #print("---",raw_a)
+        f.write(data)
+        f.close()
+
         if self.expected == Expect.status:  # whether we expect a status packet
             self.dataReady = True
             self.clockSet,self.scanning,self.recording,self.timestamp_sec,self.timestamp_ms,self.voltage = struct.unpack('<BBBLHf',data)

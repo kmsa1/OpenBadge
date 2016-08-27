@@ -110,7 +110,8 @@ def get_devices(device_file="device_macs.txt"):
 '''
 Attempts to read data from the device specified by the address. Reading is handled by gatttool.
 '''
-lastScanTimestamp = datetime.datetime.fromtimestamp(1471539036)
+#lastScanTimestamp = datetime.datetime.fromtimestamp(1471539036)
+lastScanTimestamp = datetime.datetime.fromtimestamp(1472166805)
 
 def dialogue(addr=""):
 	global lastScanTimestamp
@@ -451,103 +452,6 @@ if __name__ == "__main__":
 		reset()
 		time.sleep(2)  # requires sleep after reset
 		logger.info("Done resetting BLE")
-	
-	if args.mode == "sync_device":
-		status = send_time(args.device)
-		if status != 0:
-			logger.error("error sending time to {}".format(args.device))
-		
-		exit(0)
-
-	if args.mode == "sync_all":  
-	    logger.info('Syncing all badges.')
-        whitelist_devices = get_devices()
-        synced_devices = []
-        unsynced_devices = []
-        if not args.use_whitelist:
-            logger.info("Scanning for devices...")
-            scanned_devices = scan_for_devices(whitelist_devices)
-            logger.info("Found: {} devices".format(len(scanned_devices)))
-            synced_devices = [x for x in scanned_devices if x['device_info']['is_sync']==True]
-            unsynced_devices = [x for x in scanned_devices if x['device_info']['is_sync']==False]
-        else:
-            logger.info("Scan is disabled. Using whitelist.")
-            synced_devices = [{'mac':x} for x in whitelist_devices]
-
-        time.sleep(2) 
-
-        if len(unsynced_devices)>0:
-            logger.info("Sending dates to unsynced devices...")
-            for device in unsynced_devices:
-                mac=device['mac']
-                status = send_time(mac)
-                if status != 0:
-                    logger.error("error sending time to {}".format(mac))
-
-                time.sleep(2)  # requires sleep between devices
-                mac=None
-        if len(synced_devices)>0:            
-            logger.info("Communicating with synced devices...")
-            for device in synced_devices:
-                mac=device['mac']
-                getStatus(mac)
-                time.sleep(2)  # requires sleep between devices
-                mac=None
-					
-		time.sleep(2) # allow BLE time to disconnect 
-	
-	if args.mode == "start_all":  
-	    logger.info('Starting all badges recording.')
-        whitelist_devices = get_devices()
-        synced_devices = []
-        unsynced_devices = []
-        if not args.use_whitelist:
-            logger.info("Scanning for devices...")
-            scanned_devices = scan_for_devices(whitelist_devices)
-            logger.info("Found: {} devices".format(len(scanned_devices)))
-            synced_devices = [x for x in scanned_devices if x['device_info']['is_sync']==True]
-            unsynced_devices = [x for x in scanned_devices if x['device_info']['is_sync']==False]
-        else:
-            logger.info("Scan is disabled. Using whitelist.")
-            synced_devices = [{'mac':x} for x in whitelist_devices]
-
-        time.sleep(2) 
-
-        if len(unsynced_devices)>0:
-            logger.info("Sending startRec to unsynced devices...")
-            for device in unsynced_devices:
-                mac=device['mac']
-                status = send_time(mac)
-                if status != 0:
-                    logger.error("error sending time to {}".format(mac))
-
-                time.sleep(2)  # requires sleep between devices
-                mac=None
-        if len(synced_devices)>0:            
-            logger.info("Sending startRec to alldevices...")
-            for device in synced_devices:
-                mac=device['mac']
-                startRec(mac)
-                time.sleep(2)  # requires sleep between devices
-                mac=None
-					
-		time.sleep(2) # allow BLE time to disconnect 
-
-	# scan for devices
-	if args.mode == "scan":
-		logger.info('Scanning for badges')
-		while True:
-			whitelist_devices = get_devices()
-			logger.info("Scanning for devices...")
-			scanned_devices = scan_for_devices(whitelist_devices)
-			fout = open(scans_file_name, "a")			
-			for device in scanned_devices:
-					mac=device['mac']
-					scan_date=device['device_info']['scan_date']
-					rssi=device['device_info']['rssi']
-					logger.debug("{},{},{:.2f}".format(scan_date,mac,rssi))
-					fout.write("{},{},{:.2f}\n".format(scan_date,mac,rssi))
-			fout.close()
 		
 	# pull data from all devices
 	if args.mode == "pull":
@@ -571,6 +475,7 @@ if __name__ == "__main__":
 				logger.info("Communicating with devices...")
 				for device in scanned_devices:
 					mac=device['mac']
+					startRec(mac)
 					dialogue(mac)
 					time.sleep(0.5)  # requires sleep between devices
 					mac=None
